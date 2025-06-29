@@ -19,9 +19,42 @@ char *read_file(const char *path, size_t *out_len)
     rewind(file);
 
     char *buffer = malloc(len + 1);
-    fread(buffer, 1, len, file);
-    buffer[len] = '\0';
+    if (!buffer)
+    {
+        perror("malloc failed");
+        fclose(file);
+        return NULL;
+    }
+    size_t total_read = 0;
+    size_t bytes_read;
+    while (total_read < len)
+    {
+        bytes_read = fread(buffer + total_read, 1, len - total_read, file);
+        if (bytes_read == 0)
+        {
+            if (feof(file))
+            {
+                break;
+            }
+            else if (ferror(file))
+            {
+                perror("Error reading file");
+                free(buffer);
+                fclose(file);
+                return NULL;
+            }
+        }
+        total_read += bytes_read;
+    }
+
+    buffer[total_read] = '\0';
     fclose(file);
+
+    if (out_len)
+    {
+        *out_len = total_read;
+    }
+
     return buffer;
 }
 

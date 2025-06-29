@@ -59,6 +59,14 @@ void addfile(const char *filename)
 
     printf("added %s as blob %s \n", filename, hash_str);
 
+    FILE *index = fopen(".sert/index", "a");
+    if (!index)
+    {
+        perror("There was error opening index file");
+        return;
+    }
+    fprintf(index, "%s %s \n", filename, hash_str);
+
     free(file_content);
     free(blob_data);
 }
